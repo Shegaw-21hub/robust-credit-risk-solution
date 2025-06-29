@@ -1,277 +1,170 @@
-# Credit Risk Modeling Project
+# Part 1: Title, and Executive Summary
+This section provides a high-level overview, immediately showcasing the project's purpose and key technologies.
+## Credit Risk Modeling Project: An End-to-End MLOps Approach
 
-This repository hosts a comprehensive credit risk modeling project, from initial data understanding and preprocessing to model training, evaluation, and experiment tracking using MLflow.
+[![Python Version](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109.0-009688.svg)](https://fastapi.tiangolo.com/)
+[![MLflow](https://img.shields.io/badge/MLflow-2.10.1-orange.svg)](https://mlflow.org/)
+[![Docker](https://img.shields.io/badge/Docker-Enabled-blue.svg)](https://www.docker.com/)
+[![GitHub Actions CI](https://github.com/your-username/credit-risk-model/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/credit-risk-model/actions/workflows/ci.yml)
+This repository presents a robust and production-ready solution for credit risk assessment, encompassing the entire machine learning lifecycle from initial data understanding and sophisticated preprocessing to advanced model training, rigorous evaluation, and streamlined experiment tracking with MLflow. It integrates modern MLOps practices, including containerization with Docker and automated Continuous Integration (CI) with GitHub Actions, ensuring reproducibility, scalability, and maintainability.
 
-## Credit Scoring Business Understanding
+The core objective is to predict customer creditworthiness based on transactional behavior, providing an essential tool for financial institutions to manage risk, optimize lending decisions, and ensure regulatory compliance.
+
+---
+# Part 2: Credit Scoring Business Understanding & Regulatory Compliance
+
+## 🎯 Credit Scoring Business Understanding
+
+Credit scoring is a cornerstone of responsible lending, enabling financial institutions to quantify and manage the risk associated with extending credit. Our approach is guided by industry best practices and regulatory considerations:
 
 ### 1. Basel II Accord and Model Interpretability
 
-The Basel II Accord emphasizes three pillars: minimum capital requirements, supervisory review, and market discipline. For our model:
-- **Regulatory Compliance**: The accord requires banks to demonstrate that their risk measurement systems are conceptually sound and empirically validated. This necessitates an interpretable model where decision-making can be clearly explained to regulators.
-- **Documentation**: We must thoroughly document our modeling process, including feature selection, proxy variable creation, and validation procedures.
-- **Risk Sensitivity**: The model must accurately differentiate risk levels to ensure proper capital allocation according to risk weights.
+The Basel II Accord serves as a foundational framework for banking regulation, emphasizing three pillars crucial for risk management: Minimum Capital Requirements, Supervisory Review, and Market Discipline. For our credit risk model, adherence to these principles is paramount:
 
-### 2. Proxy Variable Necessity and Risks
+* **Regulatory Compliance**: The Accord mandates that banks possess demonstrably sound and empirically validated risk measurement systems. This necessitates the development of an **interpretable model**, where the underlying decision-making logic is transparent and explicable to regulatory bodies. This model is designed to facilitate clear explanations of how a credit decision is reached.
+* **Comprehensive Documentation**: Rigorous documentation of every stage of our modeling process is essential. This includes the rationale behind feature selection, the methodologies for creating proxy variables, and the detailed procedures for model validation and backtesting.
+* **Granular Risk Sensitivity**: The model is engineered to accurately differentiate between various levels of credit risk. This granular understanding is critical for ensuring that capital allocation is precisely aligned with the risk weights associated with different loan portfolios, thereby optimizing capital efficiency.
 
-Since we lack direct default data:
-- **Necessity**: A proxy based on RFM (Recency, Frequency, Monetary) metrics allows us to approximate credit risk from transactional behavior patterns that correlate with repayment likelihood.
-- **Business Risks**:
-    - **Misclassification Risk**: The proxy might mislabel some customers, leading to either lost revenue (false positives) or increased defaults (false negatives).
-    - **Concept Drift**: Behavioral patterns in e-commerce may not perfectly correlate with credit repayment behavior.
-    - **Regulatory Scrutiny**: We must justify our proxy methodology to satisfy compliance requirements.
+### 2. Proxy Variable Necessity and Associated Risks
+
+In scenarios where direct default data is unavailable or scarce (e.g., for new customer segments or novel product offerings), the use of proxy variables becomes a necessity to approximate credit risk.
+
+* **Necessity**: Our model utilizes a proxy based on RFM (Recency, Frequency, Monetary) metrics derived from transactional behavior. This approach allows us to infer patterns correlating with repayment likelihood, bridging the gap created by the absence of direct default labels.
+* **Business Risks**:
+    * **Misclassification Risk**: A poorly constructed or applied proxy can lead to significant misclassification, resulting in either:
+        * **False Positives**: Mislabeling creditworthy customers as high-risk, leading to lost revenue opportunities.
+        * **False Negatives**: Mislabeling high-risk customers as low-risk, leading to increased default rates and financial losses.
+    * **Concept Drift & Data Fidelity**: Behavioral patterns observed in e-commerce or other transactional data may not perfectly or perpetually correlate with traditional credit repayment behavior. This introduces a risk of concept drift, where the relationship between the proxy and actual credit risk evolves over time.
+    * **Regulatory Scrutiny**: The methodology underpinning any proxy variable must be meticulously justified and validated to satisfy stringent compliance requirements and withstand regulatory audits.
 
 ### 3. Model Complexity Trade-offs
 
-**Simple Models (Logistic Regression with WoE)**:
-- *Advantages*: Easily interpretable, compliant with "right to explanation" regulations, simpler to validate and audit.
-- *Disadvantages*: May miss complex nonlinear relationships, potentially lower predictive power.
+Choosing the right model complexity involves a critical balance between predictive power, interpretability, and regulatory acceptance:
 
-**Complex Models (Gradient Boosting)**:
-- *Advantages*: Higher predictive accuracy, can capture intricate feature interactions.
-- *Disadvantages*: "Black box" nature raises regulatory concerns, harder to explain decisions to customers.
+* **Simple Models (e.g., Logistic Regression with WoE Transformation)**:
+    * *Advantages*: Highly interpretable ("white box" nature), directly compliant with "right to explanation" regulations (e.g., GDPR), simpler to validate, audit, and deploy. They offer transparency crucial for financial applications.
+    * *Disadvantages*: May struggle to capture highly complex, non-linear relationships within the data, potentially leading to sub-optimal predictive power compared to more sophisticated models.
 
-**Recommended Approach**: Start with interpretable models and only increase complexity if justified by significant performance gains that outweigh regulatory costs.
-## Project Structure
+* **Complex Models (e.g., Gradient Boosting Machines like LightGBM, XGBoost)**:
+    * *Advantages*: Generally offer superior predictive accuracy, capable of capturing intricate feature interactions and non-linear patterns that simpler models might miss.
+    * *Disadvantages*: Their "black box" nature can raise significant regulatory concerns, making it challenging to explain individual credit decisions to customers or regulators, which is a key requirement in consumer finance.
 
-The project is organized into logical directories to ensure maintainability and clarity:
+**Recommended Approach**: Our strategy prioritizes interpretability and regulatory alignment. We advocate starting with more interpretable models (e.g., Logistic Regression with WoE) to establish a strong, explainable baseline. Increased model complexity (e.g., moving to Gradient Boosting) should only be pursued if demonstrably justified by substantial and consistent performance gains that convincingly outweigh the added regulatory scrutiny and operational complexities.
+
+---
+# Part 3: Project Architecture & Structure
+This section outlines the project's directory structure, updated to include all the new components like Dockerfiles, CI, and the refactored API.
+## 🏛️ Project Architecture and Structure
+
+The project is meticulously organized into logical directories, adhering to best practices for MLOps and software engineering, ensuring maintainability, clarity, and scalability.
 ```
 credit-risk-model/
-├── .github/
+├── .github/                            # GitHub Actions workflows for CI/CD
 │   └── workflows/
-│       └── ci.yml                # GitHub Actions workflow for CI (from task-6-ci)
+│       └── ci.yml                      # Automated Continuous Integration pipeline
 ├── data/
 │   ├── processed/
-│   │   ├── eda_plots/            # Directory for EDA visualizations (from task-2-eda)
+│   │   ├── eda_plots/                  # Directory for EDA visualizations
 │   │   │   └── * # Placeholder for EDA plot files
-│   │   └── model_ready_data.csv  # Cleaned and processed data (output of data_processing.py)
+│   │   └── model_ready_data.csv        # Cleaned, processed, and feature-engineered data (output of data_processing.py)
 │   └── raw/
-│       └── [raw_data_files]      # Original, raw dataset files
+│       └── [raw_data_files]            # Original, raw dataset files
 ├── models/
-│   └── best_model.pkl            # Saved artifact of the best trained model (from task-4-model)
+│   └── preprocessor.pkl                # Saved artifact of the fitted scikit-learn preprocessor
+│   └── best_model.pkl                  # Saved artifact of the best trained model (for local inference/backup)
 ├── notebooks/
-│   └── 1.0-eda.ipynb             # Jupyter Notebook for Exploratory Data Analysis (from task-2-eda)
+│   └── 1.0-eda.ipynb                   # Jupyter Notebook for Exploratory Data Analysis
 ├── src/
-│   ├── api/                      # Directory for API source code (from task-5-api)
-│   │   ├── main.py
-│   │   └── pydantic_models.py
-│   ├── data_processing.py        # Script for data cleaning and feature engineering (from task-3-features)
-│   └── train.py                  # Script for model training, evaluation, and MLflow tracking (from task-4-model)
+│   ├── api/                            # FastAPI application for model serving
+│   │   ├── init.py                 # Python package initializer
+│   │   ├── main.py                     # Main FastAPI application entry point
+│   │   └── pydantic_models.py          # Pydantic data models for API requests/responses
+│   ├── data_processing.py              # Script for data cleaning and feature engineering
+│   └── train.py                        # Script for model training, evaluation, and MLflow tracking
 ├── tests/
-│   └── test_data_processing.py   # Unit tests for the data_processing.py script (from task-3-features)
-├── .gitignore                    # Specifies intentionally untracked files to ignore (core file)
-├── Dockerfile                    # Dockerfile for containerization (from task-5-api)
-├── docker-compose.yml            # Docker Compose configuration (from task-5-api)
-├── mlruns/                       # MLflow local tracking directory (generated by train.py)
-├── README.md                     # Project overview and documentation (core file)
-└── requirements.txt              # Python dependencies for the project (core file)
+│   ├── init.py                     # Python package initializer
+│   └── test_data_processing.py         # Unit tests for the data_processing.py script
+├── .dockerignore                       # Specifies files/directories to exclude from Docker image builds
+├── .gitignore                          # Specifies intentionally untracked files to ignore
+├── Dockerfile                          # Dockerfile for building the FastAPI application image
+├── docker-compose.yml                  # Docker Compose configuration for multi-service local deployment (API + MLflow)
+├── mlruns/                             # MLflow local tracking directory (generated by train.py, persisted by Docker Compose)
+├── README.md                           # Project overview and documentation (this file)
+└── requirements.txt                    # Python dependencies for the project
 ```
-## Setup and Running the Project
+# Part 4: Setup and Running the Project (Local Development with Docker Compose)
+This section provides clear, step-by-step instructions for setting up and running the entire project locally using Docker Compose, emphasizing ease of use.
+## 🚀 Setup and Running the Project
 
-Follow these steps to set up the project environment and run the model training pipeline:
+The most straightforward way to set up and run this project for development, including both the FastAPI application and the MLflow tracking server, is using Docker Compose.
 
 ### Prerequisites
 
-* Python 3.8+
-* `pip` (Python package installer)
+* **Docker Desktop (or Docker Engine)**: Ensure Docker is installed and running on your system (Windows, macOS, or Linux).
+* **Git**: For cloning the repository.
+* **Python 3.8+ & pip**: While Docker handles most dependencies, you might need a local Python environment for initial setup or running specific scripts outside Docker.
 
 ### 1. Clone the Repository
 
-```bash
-git clone [https://github.com/your-username/credit-risk-model.git](https://github.com/your-username/credit-risk-model.git)
-cd credit-risk-model
-python -m venv venv
-# On Windows
-.\venv\Scripts\activate
-# On macOS/Linux
-source venv/bin/activate
-### Coding partner
-
-Show thinking
-I understand. It seems you're having trouble copying the entire content at once. My apologies for that inconvenience.
-
-I will provide the complete README.md content for you in smaller, more manageable markdown blocks, section by section. Please copy each block and paste them one after the other into your README.md file.
-
-Part 1: Credit Risk Modeling Project (Main Title & Business Understanding)
-
-Markdown
-
-# Credit Risk Modeling Project
-
-This repository hosts a comprehensive credit risk modeling project, from initial data understanding and preprocessing to model training, evaluation, and experiment tracking using MLflow.
-
-## Credit Scoring Business Understanding
-
-### 1. Basel II Accord and Model Interpretability
-
-The Basel II Accord emphasizes three pillars: minimum capital requirements, supervisory review, and market discipline. For our model:
-- **Regulatory Compliance**: The accord requires banks to demonstrate that their risk measurement systems are conceptually sound and empirically validated. This necessitates an interpretable model where decision-making can be clearly explained to regulators.
-- **Documentation**: We must thoroughly document our modeling process, including feature selection, proxy variable creation, and validation procedures.
-- **Risk Sensitivity**: The model must accurately differentiate risk levels to ensure proper capital allocation according to risk weights.
-
-### 2. Proxy Variable Necessity and Risks
-
-Since we lack direct default data:
-- **Necessity**: A proxy based on RFM (Recency, Frequency, Monetary) metrics allows us to approximate credit risk from transactional behavior patterns that correlate with repayment likelihood.
-- **Business Risks**:
-    - **Misclassification Risk**: The proxy might mislabel some customers, leading to either lost revenue (false positives) or increased defaults (false negatives).
-    - **Concept Drift**: Behavioral patterns in e-commerce may not perfectly correlate with credit repayment behavior.
-    - **Regulatory Scrutiny**: We must justify our proxy methodology to satisfy compliance requirements.
-
-### 3. Model Complexity Trade-offs
-
-**Simple Models (Logistic Regression with WoE)**:
-- *Advantages*: Easily interpretable, compliant with "right to explanation" regulations, simpler to validate and audit.
-- *Disadvantages*: May miss complex nonlinear relationships, potentially lower predictive power.
-
-**Complex Models (Gradient Boosting)**:
-- *Advantages*: Higher predictive accuracy, can capture intricate feature interactions.
-- *Disadvantages*: "Black box" nature raises regulatory concerns, harder to explain decisions to customers.
-
-**Recommended Approach**: Start with interpretable models and only increase complexity if justified by significant performance gains that outweigh regulatory costs.
-Part 2: Project Structure
-
-Markdown
-
-## Project Structure
-
-The project is organized into logical directories to ensure maintainability and clarity:
-
-credit-risk-model/
-├── data/
-│   └── processed/
-│       └── model_ready_data.csv    # Cleaned and processed data ready for modeling
-│   └── raw/
-│       └── [raw_data_files]        # Original, raw dataset files
-├── models/
-│   └── best_model.pkl              # Saved artifact of the best trained model
-├── src/
-│   ├── 1.0-eda.ipynb               # Jupyter Notebook for Exploratory Data Analysis
-│   ├── data_processing.py          # Script for data cleaning and feature engineering
-│   ├── test_data_processing.py     # Unit tests for the data_processing.py script
-│   └── train.py                    # Script for model training, evaluation, and MLflow tracking
-├── mlruns/                         # MLflow local tracking directory
-├── .gitignore                      # Specifies intentionally untracked files to ignore
-├── README.md                       # Project overview and documentation
-└── requirements.txt                # Python dependencies for the project
-
-Part 3: Setup and Running the Project
-
-Markdown
-
-## Setup and Running the Project
-
-Follow these steps to set up the project environment and run the model training pipeline:
-
-### Prerequisites
-
-* Python 3.8+
-* `pip` (Python package installer)
-
-### 1. Clone the Repository
+First, clone the project repository to your local machine:
 
 ```bash
-git clone [https://github.com/your-username/credit-risk-model.git](https://github.com/your-username/credit-risk-model.git)
+git clone https://github.com/Shegaw-21hub/credit-risk-model
 cd credit-risk-model
-2. Create and Activate a Virtual Environment
-It's highly recommended to use a virtual environment to manage dependencies.
-
-Bash
-
-python -m venv venv
-# On Windows
-.\venv\Scripts\activate
-# On macOS/Linux
-source venv/bin/activate
 ```
-3. Install Dependencies
-Install all required Python packages from requirements.txt:
+## 2. Set Up Python Virtual Environment (Recommended for Local Scripts)
+While Docker Compose handles the main application environment, it's good practice to set up a local virtual environment for running scripts like data_processing.py or train.py directly, or for local development tools.
+```
+python -m venv venv
+# On Windows
+.\venv\Scripts\activate
+```
+## 3. Install Python Dependencies
+Install all required Python packages into your active virtual environment:
 ```
 pip install -r requirements.txt
 ```
-### Data Acquisition (Manual Step - if not already in data/raw)
-Ensure your raw data files are placed in the data/raw/ directory according to project specifications.
-###  Run the Data Processing Pipeline
+## 4. Data Acquisition (Manual Step)
+Ensure your raw dataset files are placed within the data/raw/ directory according to project specifications. This step is usually manual, depending on where your raw data originates.
+
+## 5. Run the Data Processing Pipeline
+This script cleans the raw data, performs feature engineering (including RFM and WoE transfor
+mations), and generates the model_ready_data.csv file.
 ```
 python src/data_processing.py
 ```
-### Run Data Processing Tests 
-To ensure the data processing pipeline is robust:
+## 6. Run Data Processing Tests
+To ensure the robustness and correctness of the data processing pipeline, execute its unit tests:
 ```
-python src/test_data_processing.py
+python src/tests/test_data_processing.py
 ```
-###  Train Models and Track Experiments
-This script trains various models, performs hyperparameter tuning, evaluates them, and logs all results using MLflow.
+## python src/tests/test_data_processing.py
+This script orchestrates the model training process. It trains various machine learning models, performs hyperparameter tuning, evaluates their performance, and logs all results comprehensively using MLflow. The best model is also registered in the MLflow Model Registry.
 ```
 python src/train.py
 ```
-### View MLflow UI (Experiment Tracking)
-After training, you can launch the MLflow UI to inspect the experiments, compare model runs, and manage registered models.
+## 8. Run the Project with Docker Compose
+This is the most efficient way to run both your FastAPI application and the MLflow Tracking Server concurrently.
 ```
-mlflow ui
+# From the project root directory
+docker-compose up --build
 ```
-### Component Details (Data Exploration & Data Processing)
+This command will:
 
-```markdown
-## Component Details
+Build the web service's Docker image (your FastAPI application) based on the Dockerfile.
 
-### 1. Data Exploration ( `src/1.0-eda.ipynb` )
+Start both the web service (FastAPI) and the mlflow service (MLflow Tracking Server).
 
-* **Purpose:** To gain a deep understanding of the raw dataset, identify data quality issues (missing values, outliers), explore distributions, and uncover potential relationships between features and the target variable (`is_high_risk` proxy).
-* **Key Activities:**
-    * Univariate and bivariate analysis of key financial and behavioral attributes.
-    * Visualization of data distributions and correlations.
-    * Identification of patterns that might inform feature engineering strategies.
-* **Outcome:** Insights used to guide the development of the data preprocessing and feature engineering steps.
+Mount your local project directory into the web container, allowing for live code changes during development (Uvicorn's --reload takes advantage of this).
 
-### 2. Data Preprocessing & Feature Engineering ( `src/data_processing.py` )
+Persist your MLflow experiments in the mlruns/ directory on your host machine.
 
-* **Purpose:** Transforms the raw data into a clean, normalized, and enriched format suitable for machine learning model training.
-* **Methodology:**
-    * **Handling Missing Values:** Imputation or removal strategies based on data characteristics.
-    * **Categorical Encoding:** Techniques like One-Hot Encoding or custom methods for categorical features.
-    * **Numerical Scaling:** Standardization or normalization of numerical features to ensure models perform optimally.
-    * **Feature Creation (RFM & WoE):** Generates essential features from transactional data, including Recency, Frequency, and Monetary values. Applies Weight of Evidence (WoE) transformation to categorical variables to capture their predictive power for credit risk.
-* **Output:** Generates `data/processed/model_ready_data.csv`, the primary input for model training.
+Accessing Services:
+MLflow UI (Experiment Tracking): Open your web browser and navigate to http://localhost:5000
 
-### 3. Data Processing Tests ( `src/test_data_processing.py` )
+FastAPI Application (API Documentation): Open your web browser and navigate to http://localhost:8000/docs
 
-* **Purpose:** Ensures the robustness and correctness of the `data_processing.py` script.
-* **Methodology:** Contains unit tests that validate various functions within the data processing pipeline, checking for expected outputs and handling of edge cases. This helps prevent data inconsistencies and pipeline failures.
 
-### 4. Model Training and Experiment Tracking ( `src/train.py` )
 
-* **Purpose:** Develops, evaluates, and tracks various machine learning models for credit risk prediction, ensuring reproducibility and comparability of experiments.
-* **Models Trained:**
-    * **Logistic Regression:** An interpretable baseline model, often used with WoE transformed features in credit scoring.
-    * **RandomForestClassifier:** An ensemble method known for its robustness and ability to capture non-linear relationships.
-    * **GradientBoostingClassifier:** Another powerful ensemble method that builds models sequentially to improve predictions.
-* **Methodology:**
-    * **Data Splitting:** Divides the `model_ready_data.csv` into training and testing sets using stratified sampling to maintain target distribution.
-    * **Hyperparameter Tuning:** Employs `GridSearchCV` with 5-fold cross-validation to find optimal hyperparameters for each model, optimizing for `roc_auc` score.
-    * **Evaluation Metrics:** Reports Accuracy, Precision, Recall, F1-Score, ROC AUC, and a Confusion Matrix to provide a comprehensive view of model performance.
-    * **Model Persistence:** Saves the best performing model locally as `models/best_model.pkl`.
-* **MLflow Integration:**
-    * Utilizes MLflow for comprehensive experiment tracking, logging:
-        * Model hyperparameters.
-        * Evaluation metrics (including ROC AUC, F1-Score, etc.).
-        * Confusion matrix (as an artifact).
-        * Trained model artifacts, complete with signature and input example.
-    * The best model is also registered in the MLflow Model Registry as `CreditRiskClassifier` for versioning and deployment readiness.
-    ## Results and Model Performance
 
-The training pipeline completed successfully, producing the following high-level performance metrics for the best models on the test set:
-
-* **Logistic Regression:** ROC AUC: 1.0000, F1 Score: 0.9999
-* **RandomForestClassifier:** ROC AUC: 1.0000, F1 Score: 1.0000
-* **GradientBoostingClassifier:** ROC AUC: 1.0000, F1 Score: 1.0000
-
-**Note on High Performance:** The exceptionally high ROC AUC and F1 scores (approaching 1.0) suggest that the models are performing very well. However, in real-world scenarios, such perfect scores can sometimes indicate **data leakage**. While the current pipeline is robust, future work should include a thorough investigation of the feature engineering process to rule out any inadvertent leakage of target information into features, ensuring the model's true generalization capability.
-
-## Future Work and Improvements
-
-* **Data Leakage Analysis:** Conduct a deeper dive into features to rigorously check for any form of data leakage, especially given the high model performance.
-* **Advanced Feature Engineering:** Explore more sophisticated feature interactions or external data sources.
-* **Class Imbalance Strategies:** Implement advanced techniques for handling the dataset's class imbalance (e.g., SMOTE, ADASYN, cost-sensitive learning) to potentially improve minority class prediction.
-* **Model Deployment:** Develop an API for deploying the `CreditRiskClassifier` for real-time predictions.
-* **Monitoring:** Implement monitoring for model drift and data drift in a production environment.
-* **User Interface:** Create a simple dashboard or UI to interact with the model and visualize predictions.
