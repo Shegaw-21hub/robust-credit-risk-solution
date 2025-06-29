@@ -1,4 +1,3 @@
-SYNTAX_ERROR_TEST = THIS_WILL_FAIL_IMMEDIATELY
 from fastapi import FastAPI, HTTPException
 import joblib
 import pandas as pd
@@ -20,8 +19,8 @@ app = FastAPI(title="Credit Risk Scoring API",
 # --- Constants for Credit Score and Risk Categories ---
 MIN_CREDIT_SCORE = 300
 MAX_CREDIT_SCORE = 850
-HIGH_RISK_THRESHOLD = 0.7 # Example threshold for 'High' risk
-MEDIUM_RISK_THRESHOLD = 0.3 # Example threshold for 'Medium' risk
+HIGH_RISK_THRESHOLD = 0.7
+MEDIUM_RISK_THRESHOLD = 0.3
 
 # --- Model and Preprocessor Loading ---
 PREPROCESSOR_PATH = '../models/preprocessor.pkl'
@@ -48,10 +47,9 @@ async def load_resources():
         raise RuntimeError(f"Application cannot start due to preprocessor loading error: {e}")
 
     # --- Load Model from MLflow Model Registry ---
-    # Changed from 'Production' stage to 'latest' version due to UI deprecation of stages.
-    # 'latest' refers to the highest numbered version of the registered model.
-    mlflow_model_uri = "models:/CreditRiskClassifier/latest"
-    logger.info(f"DEBUG: Attempting to load MLflow model from URI: {mlflow_model_uri}") # <--- DEBUG LINE
+    # Using 'Production' stage, or you could use 'latest' if preferred.
+    # Make sure this name ('CreditRiskClassifier') matches what you registered in train.py.
+    mlflow_model_uri = "models:/CreditRiskClassifier/Production"
     try:
         model = mlflow.pyfunc.load_model(mlflow_model_uri)
         logger.info(f"Successfully loaded model from MLflow Registry: {mlflow_model_uri}")
@@ -90,7 +88,7 @@ async def predict(features: CustomerFeatures):
         # We need to adapt based on how the underlying model (sklearn) was logged.
         # If it was logged as mlflow.sklearn.log_model, it usually supports predict_proba.
         if hasattr(model, 'predict_proba') and callable(model.predict_proba):
-            proba = model.predict_proba(processed_input_data)[:, 1]
+            proba = model.predict_proba(processed_input_data)[0, 1]
         elif hasattr(model, 'predict') and callable(model.predict):
             # If predict returns a single value or an array, try to interpret it as probability
             # This path is less common for classifiers if predict_proba is available
@@ -121,7 +119,6 @@ async def predict(features: CustomerFeatures):
         category = "Low"
 
     # 6. --- Example Logic for Recommended Limit and Term (CUSTOMIZE THIS!) ---
-    # This logic is based on the credit score. Adjust these values as per your business requirements.
     recommended_limit = None
     recommended_term = None
 
@@ -134,7 +131,7 @@ async def predict(features: CustomerFeatures):
     elif score >= 550: # Fair Credit
         recommended_limit = 2000.0
         recommended_term = 24 # months
-    else: # Poor Credit (or very low score)
+    else: # Poor Credit
         recommended_limit = 500.0
         recommended_term = 12 # months
 
