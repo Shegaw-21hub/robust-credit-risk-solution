@@ -1,26 +1,31 @@
-# Use a more specific Python 3.11 slim image, aligning with your local environment
-FROM python:3.11-slim
+# ============== Build stage (optional if you need compilation) ==============
+FROM python:3.10-slim AS base
 
-# Set working directory inside the container
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
-# This layer will only be rebuilt if requirements.txt changes
-COPY requirements.txt .
+# System deps (add if needed for numpy/pandas speed or MLflow backends)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Install dependencies with --no-cache-dir for smaller image size
+# Copy requirements and install
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all application code into the container
-# NOTE: This copies files from your build context. Use .dockerignore to exclude
-# large or unnecessary files (like .git, venv/, mlruns/, data/).
-# For development with docker-compose volumes, this COPY is less critical for source code
-# (as the volume mount overwrites it), but it's good practice for general image builds.
+# Copy project
 COPY . .
 
-# Expose the port your FastAPI application listens on
+# Expose port for uvicorn
 EXPOSE 8000
 
-# Command to run the application using uvicorn
-# --host 0.0.0.0 is crucial for allowing external connections to the container
+# Environment (override via docker-compose or runtime)
+ENV MODEL_LOCAL_PATH="models/rf_model.pkl" \
+    FEATURE_NAMES_PATH="models/feature_names.json" \
+    APP_TITLE="Credit Risk API" \
+    APP_VERSION="1.0.0"
+
+# Run the FastAPI app
 CMD ["uvicorn", "src.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
