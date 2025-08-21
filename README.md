@@ -82,7 +82,7 @@ credit-risk-model/
 │   │   └── pydantic_models.py          # Pydantic data models for API requests/responses
 │   ├── data_processing.py              # Script for data cleaning and feature engineering
 │   └── train.py                        # Script for model training, evaluation, and MLflow tracking
-├── tests/
+│   │── monitor.py                  
 │   ├── init.py                     # Python package initializer
 │   └── test_data_processing.py         # Unit tests for the data_processing.py script
 ├── .dockerignore                       # Specifies files/directories to exclude from Docker image builds
@@ -164,6 +164,11 @@ Accessing Services:
 MLflow UI (Experiment Tracking): Open your web browser and navigate to http://localhost:5000
 
 FastAPI Application (API Documentation): Open your web browser and navigate to http://localhost:8000/docs
+## 9. Monitoring & Drift Detection**  
+  - `monitor.py` → Generates **Evidently reports** (data drift + performance).  
+  - `monitor_dashboard.py` → **Streamlit dashboard** for interactive monitoring.  
+  - `monitor.yml` → **GitHub Actions workflow** to run monitoring daily and archive reports.
+
 
 
 
